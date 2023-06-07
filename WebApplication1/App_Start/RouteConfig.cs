@@ -20,6 +20,9 @@ namespace WebApplication1
             
             //Carrello
             routes.MapPageRoute("cart", "cart", "~/Pages/CartView.aspx");
+
+            //Checkout
+            routes.MapPageRoute("checkout", "checkout", "~/Pages/Checkout.aspx");
         }
     }
 }

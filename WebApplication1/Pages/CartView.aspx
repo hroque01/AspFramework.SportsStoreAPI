@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="CartView.aspx.cs" Inherits="WebApplication1.Pages.CartView" MasterPageFile="~/Pages/Store.Master"%>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="CartView.aspx.cs" Inherits="WebApplication1.Pages.CartView" MasterPageFile="~/Pages/Store.Master" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="bodyContent" runat="server">
     <div id="content">
@@ -36,6 +36,7 @@
         </table>
         <p class="actionButtons"> 
             <a href="<%= ReturnUrl %>">Continue shopping</a>
+            <a href="<%= CheckoutUrl %>">Checkout</a>
         </p>
     </div>
 </asp:Content>
