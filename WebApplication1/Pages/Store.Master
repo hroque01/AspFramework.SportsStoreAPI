@@ -1,0 +1,40 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Store.Master.cs" Inherits="WebApplication1.Pages.Site1" %>
+
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+
+    <title>SporstStore</title>
+    
+    <%-- CSS --%>
+    <link rel="stylesheet" href="../Content/StyleSheet1.css" />
+    <link rel="stylesheet" href="../Content/StyleSheet2.css" />
+
+    <asp:ContentPlaceHolder ID="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div id="header">
+            <%-- Inclusione del controllo CartSummury.ascx --%>
+            <SS:CartSummary runat="server" />
+            <div class="title">SPORTS STORE</div>
+        </div>
+
+        <%-- Inclusione del controllo CategoryList.ascx --%>
+        <div id="categories"> 
+            <SS:CatLinks runat="server" />
+        </div>  
+
+        <div>
+            <asp:ContentPlaceHolder ID="bodyContent" runat="server">
+            </asp:ContentPlaceHolder>
+        </div>
+        <div>
+            <asp:ContentPlaceHolder ID="FooterPlaceHolder" runat="server">
+            </asp:ContentPlaceHolder>
+        </div>
+    </form>
+</body>
+</html>
