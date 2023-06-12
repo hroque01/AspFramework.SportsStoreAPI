@@ -5,12 +5,13 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Cors;
 using WebApplication1.Models;
 using WebApplication1.Models.Repository;
 
+
 namespace WebApplication1.ControllersApi
 {
-
     public class ProductController : ApiController
     {
         public IEnumerable<Product> GetProducts()
@@ -21,8 +22,5 @@ namespace WebApplication1.ControllersApi
                 return products;
             }
         }
-
-
-
     }
 }

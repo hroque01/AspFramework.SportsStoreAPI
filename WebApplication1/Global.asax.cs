@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Web;
 using System.Web.Http;
 using System.Web.Optimization;
@@ -20,7 +21,19 @@ namespace WebApplication1
         }
         protected void Session_Start(object sender, EventArgs e) {
         }
-        protected void Application_BeginRequest(object sender, EventArgs e) { 
+        protected void Application_BeginRequest()
+        {
+            // Questo metodo viene invocato all'inizio di ogni richiesta HTTP
+
+            if (Request.HttpMethod == "OPTIONS")
+            {
+                // Se il metodo della richiesta HTTP è OPTIONS, 
+                // risponde immediatamente con lo stato OK (200)
+                // Questo è un comportamento comune nelle API REST per gestire le richieste di pre-volo CORS
+
+                Response.StatusCode = (int)HttpStatusCode.OK;
+                Response.End();
+            }
         }
         protected void Application_AuthenticateRequest(object sender, EventArgs e) { 
         }

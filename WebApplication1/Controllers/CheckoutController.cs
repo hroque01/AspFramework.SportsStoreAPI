@@ -1,66 +1,113 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web.Http;
-using static System.Collections.Specialized.BitVector32;
 using WebApplication1.Models.Repository;
 using WebApplication1.Models;
-using WebApplication1.Pages.Helpers;
-using System.Web;
+
 
 namespace WebApplication1.Controllers
 {
+    // Classe controller per gestire il checkout degli ordini
     public class CheckoutController : ApiController
     {
+        // Istanzia un oggetto Repository e una sessione HTTP
+        private Repository repository = new Repository();
+
         [HttpPost]
-        public IHttpActionResult ProcessOrder(Order order)
+        // Processa l'ordine inviato come parametro
+        public IHttpActionResult ProcessOrder(OrderDTO orderDTO)
         {
-            if (ModelState.IsValid)
+            // Verifica se il modello dei dati è valido
+            if (!ModelState.IsValid)
             {
-                // Crea una nuova istanza di Order e popola i suoi dati con i valori ricevuti dalla richiesta
-                Order myOrder = new Order
-                {
-                    Name = order.Name,
-                    Line1 = order.Line1,
-                    Line2 = order.Line2,
-                    Line3 = order.Line3,
-                    City = order.City,
-                    State = order.State,
-                    GiftWrap = order.GiftWrap,
-                    Dispatched = order.Dispatched
-                };
-
-                // Inizializza la lista OrderLines dell'oggetto myOrder
-                myOrder.OrderLines = new List<OrderLine>();
-
-                // Ottieni il carrello dalla sessione utilizzando l'helper SessionHelper
-                Cart myCart = SessionHelper.GetCart(HttpContext.Current.Session);
-
-                // Per ogni linea nel carrello, crea una nuova istanza di OrderLine
-                // e aggiungila alla lista OrderLines dell'oggetto myOrder
-                foreach (CartLine line in myCart.Lines)
-                {
-                    myOrder.OrderLines.Add(new OrderLine
-                    {
-                        Order = myOrder,
-                        Product = line.Product,
-                        Quantity = line.Quantity
-                    });
-                }
-
-                // Salva l'ordine utilizzando il Repository
-                new Repository().SaveOrder(myOrder);
-
-                // Svuota il carrello
-                myCart.Clear();
-
-                return Ok("Order placed successfully.");
+                return BadRequest(ModelState);
             }
 
-            return BadRequest("Invalid order data.");
-        }
+            // Verifica se il carrello è vuoto
+            if (orderDTO.CartItems == null || orderDTO.CartItems.Count == 0)
+            {
+                return BadRequest("The cart is empty");
+            }
 
+            try
+            {
+                // Crea un nuovo ordine dai dati inviati
+                var order = new Order
+                {
+                    Name = orderDTO.Name,
+                    Line1 = orderDTO.Line1,
+                    Line2 = orderDTO.Line2,
+                    Line3 = orderDTO.Line3,
+                    City = orderDTO.City,
+                    State = orderDTO.State,
+                    GiftWrap = orderDTO.GiftWrap,
+                    Dispatched = orderDTO.Dispatched,
+                    OrderLines = new List<OrderLine>()
+                };
+
+                // Aggiungi ogni prodotto del carrello all'ordine
+                foreach (var item in orderDTO.CartItems)
+                {
+                    Product product = repository.Products.FirstOrDefault(p => p.ProductID == item.ProductID);
+
+                    if (product != null)
+                    {
+                        order.OrderLines.Add(new OrderLine
+                        {
+                            Order = order,
+                            Product = product,
+                            Quantity = item.Quantity // Usa la quantità dal carrello
+                        });
+                    }
+                }
+
+                // Salva l'ordine nel repository
+                bool isOrderSaved = repository.SaveOrder(order);
+                if (isOrderSaved)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return InternalServerError(new Exception("Order saving failed"));
+                }
+            }
+            catch (Exception ex)
+            {
+                // Stampa l'eccezione nel log del debug
+                System.Diagnostics.Debug.WriteLine(ex.ToString());
+                // Restituisci l'errore al client
+                return InternalServerError(ex);
+            }
+        }
+    }
+
+    // Definizione delle classi DTO
+
+    // Classe per rappresentare un articolo del carrello
+    public class CartItemDTO
+    {
+        public int ProductID { get; set; }
+        public int Quantity { get; set; }
+    }
+
+    // Classe per rappresentare un ordine
+    public class OrderDTO
+    {
+        public string Name { get; set; }
+        public string Line1 { get; set; }
+        public string Line2 { get; set; }
+        public string Line3 { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public bool GiftWrap { get; set; }
+        public bool Dispatched { get; set; }
+        public List<CartItemDTO> CartItems { get; set; }
+
+        public OrderDTO()
+        {
+            CartItems = new List<CartItemDTO>();
+        }
     }
 }

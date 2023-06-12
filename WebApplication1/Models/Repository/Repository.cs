@@ -30,41 +30,50 @@ namespace WebApplication1.Models.Repository
             }
         }
 
-        public void SaveOrder(Order order)
+        public bool SaveOrder(Order order)
         {
-            if (order.OrderId == 0)
+            bool isSaved = false;
+            using (var dbContextTransaction = context.Database.BeginTransaction())
             {
-                // Se l'ID dell'ordine è 0, significa che è un nuovo ordine e lo aggiungiamo al contesto del database.
-                // Inoltre, per ogni linea dell'ordine, impostiamo lo stato dell'oggetto Product associato come Modified.
-                // Ciò indica al contesto del database che l'oggetto Product è stato modificato.
-
-                order = context.Orders.Add(order);
-                foreach (OrderLine line in order.OrderLines)
+                try
                 {
-                    context.Entry(line.Product).State = EntityState.Modified;
+                    if (order.OrderId == 0)
+                    {
+                        order = context.Orders.Add(order);
+                        foreach (OrderLine line in order.OrderLines)
+                        {
+                            context.Entry(line.Product).State = EntityState.Modified;
+                        }
+                    }
+                    else
+                    {
+                        Order dbOrder = context.Orders.Find(order.OrderId);
+                        if (dbOrder != null)
+                        {
+                            dbOrder.Name = order.Name;
+                            dbOrder.Line1 = order.Line1;
+                            dbOrder.Line2 = order.Line2;
+                            dbOrder.Line3 = order.Line3;
+                            dbOrder.City = order.City;
+                            dbOrder.State = order.State;
+                            dbOrder.GiftWrap = order.GiftWrap;
+                            dbOrder.Dispatched = order.Dispatched;
+                        }
+                    }
+                    context.SaveChanges();
+                    dbContextTransaction.Commit();
+                    isSaved = true;
+                }
+                catch (Exception)
+                {
+                    dbContextTransaction.Rollback();
                 }
             }
-            else
-            {
-                // Se l'ID dell'ordine non è 0, significa che stiamo aggiornando un ordine esistente nel database.
-                // Cerchiamo l'ordine corrispondente nel contesto del database e aggiorniamo i suoi attributi con i valori forniti nell'oggetto order.
 
-                Order dbOrder = context.Orders.Find(order.OrderId);
-                if (dbOrder != null)
-                {
-                    dbOrder.Name = order.Name;
-                    dbOrder.Line1 = order.Line1;
-                    dbOrder.Line2 = order.Line2;
-                    dbOrder.Line3 = order.Line3;
-                    dbOrder.City = order.City;
-                    dbOrder.State = order.State;
-                    dbOrder.GiftWrap = order.GiftWrap;
-                    dbOrder.Dispatched = order.Dispatched;
-                }
-            }
-            // Salviamo le modifiche nel database chiamando il metodo SaveChanges del contesto del database.
-            context.SaveChanges();
+            return isSaved;
         }
+
+
 
     }
 }
